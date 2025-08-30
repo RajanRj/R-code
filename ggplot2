@@ -1,0 +1,85 @@
+# Load library
+library(ggplot2)
+
+# Example dataset
+df <- data.frame(
+  Category = rep(c("A", "B", "C"), each = 10),
+  Group = rep(c("X", "Y"), 15),
+  Value = rnorm(30, mean = 50, sd = 10),
+  Time = rep(1:10, 3)
+)
+
+### 1. Basic Scatter Plot
+ggplot(df, aes(x = Time, y = Value)) +
+  geom_point()
+
+### 2. Line Plot
+ggplot(df, aes(x = Time, y = Value, color = Category)) +
+  geom_line(size = 1.2)
+
+### 3. Bar Plot (Counts)
+ggplot(df, aes(x = Category)) +
+  geom_bar(fill = "skyblue")
+
+### 4. Bar Plot (Summary with stat = "identity")
+df_summary <- aggregate(Value ~ Category, data = df, mean)
+ggplot(df_summary, aes(x = Category, y = Value, fill = Category)) +
+  geom_col()
+
+### 5. Histogram
+ggplot(df, aes(x = Value)) +
+  geom_histogram(binwidth = 5, fill = "blue", color = "white")
+
+### 6. Density Plot
+ggplot(df, aes(x = Value, fill = Category)) +
+  geom_density(alpha = 0.5)
+
+### 7. Boxplot
+ggplot(df, aes(x = Category, y = Value, fill = Category)) +
+  geom_boxplot()
+
+### 8. Violin Plot
+ggplot(df, aes(x = Category, y = Value, fill = Category)) +
+  geom_violin(trim = FALSE)
+
+### 9. Faceting (multiple panels)
+ggplot(df, aes(x = Time, y = Value, color = Group)) +
+  geom_line() +
+  facet_wrap(~ Category)
+
+### 10. Scatter Plot with Regression Line
+ggplot(df, aes(x = Time, y = Value)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE, color = "red")
+
+### 11. Customize Themes
+ggplot(df, aes(x = Category, y = Value, fill = Category)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(
+    title = "Boxplot Example",
+    x = "Category",
+    y = "Value"
+  )
+
+### 12. Custom Colors
+ggplot(df, aes(x = Time, y = Value, color = Category)) +
+  geom_line(size = 1.2) +
+  scale_color_manual(values = c("A" = "red", "B" = "blue", "C" = "green"))
+
+### 13. Save Plot
+p <- ggplot(df, aes(x = Category, y = Value)) +
+  geom_boxplot()
+ggsave("plot_example.png", plot = p, width = 6, height = 4, dpi = 300)
+
+### 14. Labels & Themes
+ggplot(df, aes(x = Time, y = Value, color = Category)) +
+  geom_point(size = 3) +
+  labs(
+    title = "Scatter Plot Example",
+    subtitle = "ggplot2 in Action",
+    x = "Time",
+    y = "Value",
+    color = "Category"
+  ) +
+  theme_bw()
