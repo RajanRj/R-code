@@ -1,0 +1,119 @@
+# Install & load
+install.packages("doebioresearch")
+library(doebioresearch)
+
+# Assume your dataset is called 'mydata'
+# Example columns:
+# mydata$Yield (numeric)
+# mydata$Treatment (factor)
+# mydata$Block (factor)
+# mydata$Row (factor)
+# mydata$Column (factor)
+# mydata$Factor1, Factor2, Factor3 (for factorials)
+# mydata$Irrigation, Variety (for split plot)
+# mydata$FactorA, FactorB (for strip plot)
+
+### 1. Completely Randomized Design (CRD)
+result_crd <- crd(
+  data = mydata["Yield"],
+  trt.vector = as.factor(mydata$Treatment),
+  MultipleComparisonTest = 1   # 1=LSD, 2=Duncan, 3=Tukey
+)
+print(result_crd)
+
+
+### 2. Randomized Complete Block Design (RCBD)
+result_rcbd <- rcbd(
+  data = mydata["Yield"],
+  trt.vector = as.factor(mydata$Treatment),
+  block.vector = as.factor(mydata$Block),
+  MultipleComparisonTest = 2
+)
+print(result_rcbd)
+
+
+### 3. Factorial CRD (Two Factors)
+result_fcrd2 <- fcrd2fact(
+  data = mydata["Yield"],
+  trt1.vector = as.factor(mydata$Factor1),
+  trt2.vector = as.factor(mydata$Factor2),
+  MultipleComparisonTest = 3
+)
+print(result_fcrd2)
+
+
+### 4. Factorial CRD (Three Factors)
+result_fcrd3 <- fcrd3fact(
+  data = mydata["Yield"],
+  trt1.vector = as.factor(mydata$Factor1),
+  trt2.vector = as.factor(mydata$Factor2),
+  trt3.vector = as.factor(mydata$Factor3),
+  MultipleComparisonTest = 1
+)
+print(result_fcrd3)
+
+
+### 5. Factorial RCBD (Two Factors)
+result_frbd2 <- frbd2fact(
+  data = mydata["Yield"],
+  trt1.vector = as.factor(mydata$Factor1),
+  trt2.vector = as.factor(mydata$Factor2),
+  block.vector = as.factor(mydata$Block),
+  MultipleComparisonTest = 1
+)
+print(result_frbd2)
+
+
+### 6. Factorial RCBD (Three Factors)
+result_frbd3 <- frbd3fact(
+  data = mydata["Yield"],
+  trt1.vector = as.factor(mydata$Factor1),
+  trt2.vector = as.factor(mydata$Factor2),
+  trt3.vector = as.factor(mydata$Factor3),
+  block.vector = as.factor(mydata$Block),
+  MultipleComparisonTest = 2
+)
+print(result_frbd3)
+
+
+### 7. Split-Plot Design
+result_split <- splitplot(
+  data = mydata["Yield"],
+  trt1.vector = as.factor(mydata$Irrigation),  # main plot
+  trt2.vector = as.factor(mydata$Variety),     # sub plot
+  replication.vector = as.factor(mydata$Replication),
+  MultipleComparisonTest = 1
+)
+print(result_split)
+
+
+### 8. Strip Plot Design
+result_strip <- stripplot(
+  data = mydata["Yield"],
+  trt1.vector = as.factor(mydata$FactorA),
+  trt2.vector = as.factor(mydata$FactorB),
+  replication.vector = as.factor(mydata$Replication),
+  MultipleComparisonTest = 2
+)
+print(result_strip)
+
+
+### 9. Latin Square Design (LSD)
+result_lsd <- lsd(
+  data = mydata["Yield"],
+  trt.vector = as.factor(mydata$Treatment),
+  row.vector = as.factor(mydata$Row),
+  col.vector = as.factor(mydata$Column),
+  MultipleComparisonTest = 3
+)
+print(result_lsd)
+
+
+### 10. Extra Utilities
+# Transformations
+logtransform(mydata$Yield)
+sqrtretransform(mydata$Yield)
+arcsinetransform(mydata$Percentage)
+
+# Yield conversion
+yieldconvert(value = 5000, from = "kg/plot", to = "t/ha", plotarea = 10)
