@@ -1,0 +1,70 @@
+# Load packages
+library(dplyr)
+
+# Example dataset
+mydata <- data.frame(
+  Block = rep(c("B1","B2","B3"), each = 4),
+  Treatment = rep(c("T1","T2","T3","T4"), times = 3),
+  Yield = c(45,50,47,52,46,51,48,53,44,49,46,50)
+)
+
+# 1. Check structure
+str(mydata)
+summary(mydata)
+
+# 2. Check for missing values
+anyNA(mydata)
+
+# 3. Convert columns to correct types
+mydata$Block <- as.factor(mydata$Block)
+mydata$Treatment <- as.factor(mydata$Treatment)
+mydata$Yield <- as.numeric(mydata$Yield)
+
+# 4. Check for typos / unique values
+unique(mydata$Block)
+unique(mydata$Treatment)
+
+# 5. Summary statistics
+mydata %>%
+  group_by(Treatment) %>%
+  summarise(
+    MeanYield = mean(Yield),
+    SD = sd(Yield),
+    Count = n()
+  )
+
+#Remove if necessary
+  # Simple outlier removal using 1.5*IQR
+Q1 <- quantile(mydata$Yield, 0.25)
+Q3 <- quantile(mydata$Yield, 0.75)
+IQR_val <- Q3 - Q1
+
+mydata_clean <- mydata %>%
+  filter(Yield >= (Q1 - 1.5*IQR_val) & Yield <= (Q3 + 1.5*IQR_val))
+#Check balanced design (same number of observations per block × treatment):
+  table(mydata_clean$Block, mydata_clean$Treatment)
+
+  
+#Impute missing values (if any) – often use block mean or treatment mean:
+# Impute missing values with treatment mean
+mydata$Yield[is.na(mydata$Yield)] <- 
+  mydata %>%
+  group_by(Treatment) %>%
+  summarise(mean_y = mean(Yield, na.rm = TRUE)) %>%
+  pull(mean_y)[match(mydata$Treatment[is.na(mydata$Yield)], levels(mydata$Treatment))]
+
+  # Ready for data analysis
+  library(doebioresearch)
+
+result_rcbd <- rcbd(
+  data = mydata["Yield"],
+  trt.vector = mydata$Treatment,
+  block.vector = mydata$Block,
+  MultipleComparisonTest = 1   # LSD
+)
+
+# View ANOVA & post-hoc
+print(result_rcbd)
+
+
+
