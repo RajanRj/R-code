@@ -1,0 +1,107 @@
+# Install & load packages
+install.packages("doebioresearch")
+install.packages("tidyverse")
+
+library(doebioresearch)
+library(ggplot2)
+library(dplyr)
+
+# ------------------------------
+# 1. Load your dataset
+# Replace 'mydata' with your data frame
+# Columns example:
+#   Yield (numeric)
+#   Treatment (factor or character)
+#   Block, Row, Column (for RCBD / LSD)
+#   Factor1, Factor2, Factor3 (for factorials)
+#   Irrigation, Variety (for split-plot)
+# ------------------------------
+
+# Example dataset placeholder
+# mydata <- read.csv("your_data.csv")
+
+# Automatically convert columns to factors
+mydata$Treatment <- as.factor(mydata$Treatment)
+if("Block" %in% colnames(mydata)) mydata$Block <- as.factor(mydata$Block)
+if("Row" %in% colnames(mydata)) mydata$Row <- as.factor(mydata$Row)
+if("Column" %in% colnames(mydata)) mydata$Column <- as.factor(mydata$Column)
+if("Factor1" %in% colnames(mydata)) mydata$Factor1 <- as.factor(mydata$Factor1)
+if("Factor2" %in% colnames(mydata)) mydata$Factor2 <- as.factor(mydata$Factor2)
+if("Factor3" %in% colnames(mydata)) mydata$Factor3 <- as.factor(mydata$Factor3)
+if("Irrigation" %in% colnames(mydata)) mydata$Irrigation <- as.factor(mydata$Irrigation)
+if("Variety" %in% colnames(mydata)) mydata$Variety <- as.factor(mydata$Variety)
+if("Replication" %in% colnames(mydata)) mydata$Replication <- as.factor(mydata$Replication)
+
+# ------------------------------
+# 2. Analyze Experimental Design
+# ------------------------------
+# Example: CRD
+result_crd <- crd(
+  data = mydata["Yield"],
+  trt.vector = mydata$Treatment,
+  MultipleComparisonTest = 1  # 1=LSD, 2=Duncan, 3=Tukey
+)
+
+# You can switch to RCBD, Factorial, etc.:
+# result_rcbd <- rcbd(...)
+# result_fcrd2 <- fcrd2fact(...)
+
+# ------------------------------
+# 3. Extract Mean, SEm, and Letters
+# ------------------------------
+# Assume result_crd$MultipleComparison contains LSD/Duncan/Tukey results
+df_summary <- data.frame(
+  Treatment = result_crd$MultipleComparison$Treatment,
+  MeanYield = result_crd$MultipleComparison$Mean,
+  SEm = result_crd$MultipleComparison$SEm,
+  Letters = result_crd$MultipleComparison$Letter
+)
+df_summary$Treatment <- as.factor(df_summary$Treatment)
+
+# ------------------------------
+# 4. Bar Plot with Error Bars and Significance Letters
+# ------------------------------
+plot1 <- ggplot(df_summary, aes(x = Treatment, y = MeanYield, fill = Treatment)) +
+  geom_col(width = 0.6) +
+  geom_errorbar(aes(ymin = MeanYield - SEm, ymax = MeanYield + SEm), width = 0.2) +
+  geom_text(aes(label = Letters, y = MeanYield + SEm + 1), size = 5) +
+  labs(title = "Treatment Effect on Yield",
+       y = "Mean Yield",
+       x = "Treatment") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+print(plot1)
+
+# ------------------------------
+# 5. Boxplot for Raw Data
+# ------------------------------
+plot2 <- ggplot(mydata, aes(x = Treatment, y = Yield, fill = Treatment)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.15, size = 2) +
+  labs(title = "Boxplot of Yield by Treatment",
+       y = "Yield",
+       x = "Treatment") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+print(plot2)
+
+# ------------------------------
+# 6. Scatter Plot with Mean ± SEm
+# ------------------------------
+plot3 <- ggplot(mydata, aes(x = Treatment, y = Yield)) +
+  geom_jitter(width = 0.2, alpha = 0.6, color = "darkgreen") +
+  geom_point(data = df_summary, aes(x = Treatment, y = MeanYield), color = "red", size = 3) +
+  geom_errorbar(data = df_summary, aes(ymin = MeanYield - SEm, ymax = MeanYield + SEm), width = 0.2, color = "red") +
+  labs(title = "Scatter Plot with Mean ± SEm", y = "Yield", x = "Treatment") +
+  theme_bw()
+
+print(plot3)
+
+# ------------------------------
+# 7. Optional: Save Plots
+# ------------------------------
+# ggsave("BarPlot_Yield.png", plot = plot1, width = 6, height = 4, dpi = 300)
+# ggsave("BoxPlot_Yield.png", plot = plot2, width = 6, height = 4, dpi = 300)
+# ggsave("Scatter_Yield.png", plot = plot3, width = 6, height = 4, dpi = 300)
