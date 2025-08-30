@@ -1,0 +1,113 @@
+# Load library
+library(dplyr)
+
+# Example dataset
+df <- data.frame(
+  ID = 1:10,
+  Name = c("A", "B", "C", "D", "E", "F", "G", "H", "I", "J"),
+  Age = c(23, 25, 21, 30, 29, 35, 40, 27, 22, 24),
+  Score = c(85, 90, 78, 88, 92, 70, 95, 80, 76, 89),
+  Gender = c("M", "F", "M", "F", "F", "M", "M", "F", "M", "F")
+)
+
+### dplyr Functions ###
+
+# 1. Select specific columns
+df_select <- df %>% select(ID, Name, Age)
+
+# 2. Rename columns
+df_rename <- df %>% rename(StudentName = Name, TestScore = Score)
+
+# 3. Filter rows
+df_filter <- df %>% filter(Age > 25 & Gender == "F")
+
+# 4. Distinct rows
+df_distinct <- df %>% distinct(Gender)
+
+# 5. Arrange (sort)
+df_arrange <- df %>% arrange(desc(Score))
+
+# 6. Mutate new columns
+df_mutate <- df %>%
+  mutate(
+    AgeGroup = case_when(
+      Age < 25 ~ "Young",
+      Age >= 25 & Age < 35 ~ "Adult",
+      TRUE ~ "Senior"
+    ),
+    ScoreLag = lag(Score),  # previous value
+    ScoreLead = lead(Score) # next value
+  )
+
+# 7. Group and summarise
+df_summary <- df %>%
+  group_by(Gender) %>%
+  summarise(
+    Avg_Age = mean(Age, na.rm = TRUE),
+    Max_Score = max(Score),
+    Unique_Names = n_distinct(Name),
+    .groups = "drop"
+  )
+
+# 8. Count frequencies
+df_count <- df %>% count(Gender, sort = TRUE)
+
+# 9. Slice (pick rows by position)
+df_slice <- df %>% slice(1:3)       # first 3 rows
+df_head <- df %>% slice_head(n = 2) # first 2 rows
+df_tail <- df %>% slice_tail(n = 2) # last 2 rows
+df_sample <- df %>% slice_sample(n = 3) # random 3 rows
+
+# 10. Pull a single column as vector
+ages <- df %>% pull(Age)
+
+# 11. Relocate columns
+df_relocate <- df %>% relocate(Score, .before = Name)
+
+# 12. Using across() for multiple columns
+df_across <- df %>%
+  summarise(across(c(Age, Score), list(mean = mean, sd = sd)))
+
+# 13. Rowwise operation
+df_rowwise <- df %>%
+  rowwise() %>%
+  mutate(AgeScore = sum(c(Age, Score)))
+
+# 14. Binding datasets
+df2 <- data.frame(ID = 11:12, Name = c("K", "L"), Age = c(28, 26), Score = c(84, 79), Gender = c("M", "F"))
+df_bind_rows <- bind_rows(df, df2)
+df_bind_cols <- bind_cols(df, data.frame(NewCol = 101:110))
+
+# 15. Join example
+dept <- data.frame(ID = c(1,2,3,4,5), Department = c("HR","IT","Finance","Marketing","Admin"))
+df_join <- df %>% left_join(dept, by = "ID")
+
+# 16. Chaining multiple steps
+df_chain <- df %>%
+  filter(Age > 25) %>%
+  mutate(Grade = ifelse(Score > 85, "High", "Low")) %>%
+  group_by(Gender) %>%
+  summarise(Avg_Score = mean(Score), .groups = "drop") %>%
+  arrange(desc(Avg_Score))
+
+### View results
+print(df_select)
+print(df_rename)
+print(df_filter)
+print(df_distinct)
+print(df_arrange)
+print(df_mutate)
+print(df_summary)
+print(df_count)
+print(df_slice)
+print(df_head)
+print(df_tail)
+print(df_sample)
+print(ages)
+print(df_relocate)
+print(df_across)
+print(df_rowwise)
+print(df_bind_rows)
+print(df_bind_cols)
+print(df_join)
+print(df_chain)
