@@ -15,7 +15,7 @@ library(doebioresearch)
 
 ### 1. Completely Randomized Design (CRD)
 result_crd <- crd(
-  data = mydata["Yield"],
+  data = mydata["Yield"/3:14(in position number],
   trt.vector = as.factor(mydata$Treatment),
   MultipleComparisonTest = 1   # 1=LSD, 2=Duncan, 3=Tukey
 )
